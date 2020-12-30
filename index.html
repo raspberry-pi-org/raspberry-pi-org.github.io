@@ -1,7 +1,7 @@
 <!--
  * @Author: GoogTech
  * @Date: 2020-12-23 13:08:08
- * @LastEditTime: 2020-12-23 23:10:57
+ * @LastEditTime: 2020-12-30 17:52:49
  * @Website: https://raspi.website
  * @Description: Display all projects of RaspberryPi Org
 -->
@@ -26,6 +26,7 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
+				<!-- Hello Index -->
 				<section>
 					<img style="-webkit-user-select: none;margin: auto;cursor: zoom-in;" src="https://raspi.website/img/raspi/raspberry-pi-4-labelled.webp">
 					<p style="padding-top: 15px; text-align: center; width: 1000px;">
@@ -34,16 +35,168 @@
 						</span>
 					</p>
 				</section>
+				<!-- Raspberry Pi Book : https://magpi.raspberrypi.org/books/handbook-2021 -->
 				<section>
 					<img style="-webkit-user-select: none;margin: auto;cursor: zoom-in;" src="https://raspi.website/img/book/Handbook-2021_cover_Mockup.png">
 					<p style="padding-top: 15px; text-align: center; width: 1000px;">
 						<p style="color:black; font-weight: 150; font-size: 25px; font-style: italic; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
-							<a href="https://magpi.raspberrypi.org/books/handbook-2021" target="_blank">《The Official Raspberry Pi Handbook 2021》</a> : To help you get the most of out of your Raspberry Pi computer, 
+							<a href="https://magpi.raspberrypi.org/books/handbook-2021" target="_blank">📖《The Official Raspberry Pi Handbook 2021》</a> : To help you get the most of out of your Raspberry Pi computer, 
 							this official Handbook features 200 pages of essential information, inspiring projects, practical tutorials, and definitive reviews.
 						</p>
 					</p>
 				</section>
-				<!-- <section>
+				<!-- face-recognition : https://github.com/raspberry-pi-org/face-recognition -->
+				<section>
+					<span>
+						<!-- code -->
+						<pre><code data-trim data-noescape data-line-numbers>
+							# 摄像头
+							cap = cv2.VideoCapture(0)
+							# 人脸分类级联
+							face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+							# 人眼分类级联
+							eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
+							# 获取摄像头拍摄到的画面
+							ret, frame = cap.read()
+							faces = face_cascade.detectMultiScale(frame, 1.3, 5)
+							img = frame
+							# 用人脸级联分类器引擎在人脸区域进行脸部识别
+							for (x, y, w, h) in faces:
+								# 画出人脸框, 蓝色, 画笔宽度为 2
+								img = cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
+								# 框选出人脸区域, 在人脸区域而不是全图中进行人眼检测, 节省计算资源
+								face_area = img[y:y + h, x:x + w]
+								eyes = eye_cascade.detectMultiScale(face_area, 1.3, 15)
+								# 用人眼级联分类器引擎在人脸区域进行人眼识别, 返回的 eyes 为眼睛坐标列表
+								for (ex, ey, ew, eh) in eyes:
+									# 画出人眼框, 绿色, 画笔宽度为 1
+									cv2.rectangle(face_area, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 1)
+							# 实时展示效果画面
+							cv2.imshow('Camera Frame', img)
+						</code></pre>
+						<p>
+							<a href="https://www.codacy.com/gh/raspberry-pi-org/face-recognition/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=raspberry-pi-org/face-recognition&amp;utm_campaign=Badge_Grade">
+								<img src="https://app.codacy.com/project/badge/Grade/b59144ff3038476fad5007089bcce6db"/>
+							</a>
+							<img src="https://img.shields.io/github/commit-activity/m/raspberry-pi-org/face-recognition?color=ff69b4"></img>
+							<img src="https://img.shields.io/github/repo-size/raspberry-pi-org/face-recognition"></img>
+							<img src="https://img.shields.io/github/license/raspberry-pi-org/face-recognition.svg"></img>
+						</p>
+					</span>
+					<span align="center">
+						<p style="color:black; font-weight: 150; font-size: 30px; font-style: italic; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+						📷 A simple face recognition program which base on Baidu AIP and output the voice prompt by Pyttsx3.
+						<a href="https://github.com/raspberry-pi-org/face-recognition" target="_blank">[ github repo ]</a>
+						</p>
+					</span>
+				</section>
+				<!-- weather : https://github.com/raspberry-pi-org/weather -->
+				<section>
+					<span>
+						<!-- code -->
+						<pre><code data-trim data-noescape data-line-numbers>
+							# 百度语音播报今天天气状况
+							def Voice_broadcast(weather_forcast_txt):
+								weather_info = weather_forcast_txt
+								# 将天气信息推送到微信
+								if SendToWeChat(weather_forcast_txt):
+									weather_info = weather_info + \
+									'最后, 以上天气预报内容已通过「Server 酱」推送到了你的微信~'
+								else:
+									weather_info = weather_info + \
+									'注意: 以上天气预报内容无法通过「Server 酱」推送到你的微信!'
+								client = AipSpeech(APP_ID, API_KEY, SECRET_KEY)
+								result = client.synthesis(weather_info, 'zh', 1, {'vol': 5, 'per': 0})
+								if not isinstance(result, dict):
+									with open(BAIDU_TTS_MP3, 'wb') as f:
+										f.write(result)
+									f.close()
+								# 播放语音
+								subprocess.getoutput('mplayer .tts.mp3')
+
+								
+							# 将获取的天气信息推送到微信
+							def SendToWeChat(weather_forecast_txt):
+								# text 为推送的 title, desp 为推送的 description
+								title = "天气预报来咯~"
+								content = weather_forecast_txt
+								data = {"text": title, "desp": content}
+								# 发送
+								return True if requests.post(SERVER_API, data=data).status_code == 200 else False
+						</code></pre>
+						<p>
+							<a href="https://www.codacy.com/gh/raspberry-pi-org/weather/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=raspberry-pi-org/weather&amp;utm_campaign=Badge_Grade">
+								<img src="https://app.codacy.com/project/badge/Grade/13138560e7de43de83e955f6f23d527f"/>
+							</a>
+							<img src="https://img.shields.io/github/commit-activity/m/raspberry-pi-org/weather?color=ff69b4"></img>
+							<img src="https://img.shields.io/github/repo-size/raspberry-pi-org/weather"></img>
+							<img src="https://img.shields.io/github/license/raspberry-pi-org/weather.svg"></img>
+						</p>
+					</span>
+					<span align="center">
+						<p style="color:black; font-weight: 150; font-size: 30px; font-style: italic; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+						🌈 Get the weather information then ouput voice prompt and send it to your WeChat on the specified time.
+						<a href="https://github.com/raspberry-pi-org/weather" target="_blank">[ github repo ]</a>
+						</p>
+					</span>
+				</section>
+				<!-- sysinfo : https://github.com/raspberry-pi-org/sysinfo -->
+				<section>
+					<span>
+						<!-- code -->
+						<pre><code data-trim data-noescape data-line-numbers>
+							# Return ip address
+							def getIpAddress():
+								p = os.popen("hostname -I")
+								return p.readline().strip()
+
+							# Return CPU temperature as a character string
+							def getCPUtemperature():
+								res = os.popen('vcgencmd measure_temp').readline()
+								return (res.replace("temp=", "").replace("'C\n", ""))
+							
+							# Return % of CPU used by user as a character string
+							def getCPUuse():
+								return (str(os.popen("top -n1 | awk '/Cpu\(s\):/ {print $2}'").readline().strip()))				
+						</code></pre>
+						<p>
+							<a href="https://www.codacy.com/gh/raspberry-pi-org/sysinfo/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=raspberry-pi-org/sysinfo&amp;utm_campaign=Badge_Grade">
+								<img src="https://app.codacy.com/project/badge/Grade/0a553b01919f4f53814e1f3cf33396fb"/>
+							</a>
+							<img src="https://img.shields.io/github/commit-activity/m/raspberry-pi-org/sysinfo?color=ff69b4"></img>
+							<img src="https://img.shields.io/github/repo-size/raspberry-pi-org/sysinfo"></img>
+							<img src="https://img.shields.io/github/license/raspberry-pi-org/sysinfo.svg"></img>
+						</p>
+					</span>
+					<span align="center">
+						<p style="color:black; font-weight: 150; font-size: 30px; font-style: italic; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+						👀 Get the system information of RasPi then ouput voice prompt and send it to your WeChat on the specified time.
+						<a href="https://github.com/raspberry-pi-org/sysinfo" target="_blank">[ github repo ]</a>
+						</p>
+					</span>
+				</section>
+				<!-- vsblog : https://github.com/raspberry-pi-org/vsblog -->
+				<section>
+					<span>
+						<a href=""><img src="https://raspi.website/img/java-project/vsblog/screenshot/vsblog-screenshot-screely.com.png" width="800"></a>
+						<p>
+							<a href="https://www.codacy.com/gh/YUbuntu0109/vsblog/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=YUbuntu0109/vsblog&amp;utm_campaign=Badge_Grade">
+								<img src="https://app.codacy.com/project/badge/Grade/02e473424ae64646b7f24ec11455bc42"/>
+							</a>
+							<img src="https://img.shields.io/github/commit-activity/m/YUbuntu0109/vsblog?color=ff69b4"></img>
+							<img src="https://img.shields.io/github/repo-size/YUbuntu0109/vsblog"></img>
+							<img src="https://img.shields.io/github/license/YUbuntu0109/vsblog.svg"></img>
+						</p>
+					</span>
+					<span align="center">
+						<p style="color:black; font-weight: 150; font-size: 30px; font-style: italic; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+						✍ A simple personal blog system which base on vue, springboot framework and mysql8 database.
+						<a href="https://github.com/raspberry-pi-org/vsblog" target="_blank">[ github repo ]</a>
+						</p>
+					</span>
+				</section>
+				<!-- taskGo : https://github.com/raspberry-pi-org/task -->
+				<section>
 					<span>
 						<a href=""><img src="https://project.golanger.org/img/golang-project/task/screenshot/taskGo-screenshot-screely.com.png" width="600"></a>
 						<p>
@@ -57,10 +210,12 @@
 					<span align="center">
 						<p style="color:black; font-weight: 150; font-size: 30px; font-style: italic; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
 						✅ Let's the taks.go : it's a todo management which base on vue, gin framework and sqlite3 database.
+						<a href="https://github.com/raspberry-pi-org/task" target="_blank">[ github repo ]</a>
 						</p>
 					</span>
-				</section> -->
-				<!-- <section>
+				</section>
+				<!-- fileGo : https://github.com/raspberry-pi-org/fileGo -->
+				<section>
 					<span>
 						<a href=""><img src="https://project.golanger.org/img/golang-project/fileGo/screenshot/fileGo-screenshot-screely.com.png"></a>
 						<p>
@@ -74,15 +229,17 @@
 					<span align="center">
 						<p style="color:black; font-weight: 150; font-size: 30px; font-style: italic; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
 						📁 A bijou file management tool and nothing framework be used on it so run it only by one command !
+						<a href="https://github.com/raspberry-pi-org/fileGo" target="_blank">[ github repo ]</a>
 						</p>
 					</span>
-				</section> -->
+				</section>
+				<!-- End And See You Again -->
 				<section>
 					<img style="-webkit-user-select: none;margin: auto;cursor: zoom-in;" src="https://raspi.website/img/raspi/lg.webp" width="666">
 					<span>
 						<p style="width: 1000px;">Welcome To Join RasPi Family And Share Your Project</p>
 						<p style="font-size: x-large; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
-							hey guy if you want to join <a href="https://github.com/raspberry-pi-org" target="_blank"><strong><u>us</u></strong></a> please concat me via email or <a href="https://raspi.website/img/qq/qq-group.jpg" target="_blank"><strong><u>QQ Group</u></strong></a>
+							hey guy if you want to join <a href="https://github.com/raspberry-pi-org" target="_blank"><strong><u>us</u></strong></a> please concat me via email or <a href="https://raspi.website/img/qq/qq-group.jpg" target="_blank"><strong><u>qq group</u></strong></a>
 						</p>
 					</span>
 				</section>
